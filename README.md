@@ -8,3 +8,7 @@
 
 #### You will analyze all 4 models based on following points and recommend the best model to the Principal. 
 ##### Answer the questions also in the project Guidelines file
+
+
+Solution
+#### This project contains R Markdown file ,created Html file,R-script, dataset - Grades.csv, scaledws.jpg, vif.jpg, Project Questions, You an also visit the website of this project at www.mhtdsm.wixsite.com/linearregression
