@@ -1,0 +1,735 @@
+---
+title: "Linear Regression Project for grades Data"
+author: "Mohit Arora"
+date: "October 28, 2017"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+##Project
+
+    The school principal wants to build a predictive model for predicting final for his consumption. As a principal he is very keen to have good scores by his students. He has given this data file to you with a request to suggest an appropriate model.You are required to build at least 4 models with different sets of predictors (independent variables). Selection of sets of predictor/s is upon you. Different sets of predictors can be a single variable or more than one variable. However, selection of predictor/s should be based on some logic. For example, for predicting final score of students, roll number cannot be a logical predictor.You will analyze all 4 models based on following points and recommend the best model to the Principal. 
+
+##Solution :
+
+In this project we will make a Linear Regression model to predict the final marks of a student based of the set of Predictors/independent Variables given in the file like by gpa,quiz1,quiz2,quiz3,quiz4,quiz5,total.Let's first import the file  names grades.csv
+
+```{r message=FALSE,warning=FALSE}
+library(readr)
+grades<- read_csv("C:/Users/Mohit/Documents/grades.csv") 
+##grades<- read_csv(file.choose()) ##
+dim(grades)
+colnames(grades) # this will gives us the names of the 22 variables
+```
+
+We can see that the data which we have imported has 105 observartions and 22 variables. In these 22 Variables we have continous variables as well as categorial variable. We need to be be concerned with continous or scaled data variables as predictors in order to build our model.Firstly lets study the number of students in diffrent categorial variables
+
+```{r warning=FALSE}
+library(psych)
+table(grades$gender)       #Based on gender
+table(grades$ethnicity)    #Based on Ethnicity
+table(grades$passfail)     #Based on whether pass or fail
+```
+
+
+####In the boxplots below we have on X-Axis 1=gpa 2 =quiz1 3=quiz2,4=quiz3,5=quiz4,6=quiz5 & second boxplot is for GPA
+
+These are drawn to check the normality of data in that  variable
+
+```{r fig.height=4,fig.width=4,echo=FALSE}
+boxplot(grades$gpa,grades$quiz1,grades$quiz2,grades$quiz3,grades$quiz4,grades$quiz5,col=heat.colors(6))
+boxplot(grades$total,col="red")
+```
+
+####Question  1.	Describe data of response variable and predictors in terms of key summary statistics like mean, mode, median, standard deviation, range, skewness and kurtosis. Show histogram and box plots also for each variables. [hint: describe command in R]
+
+
+    Answer:  
+    
+####Describing each predictor variable according to the above details
+
+##### Boxplots &  Histograms are drawn to check the normality of data for that variable
+
+####1. GPA
+Data of Gpa saya that mean of GPA is2.78 & sd of GPa is 0.76 Also Mean and trimmed mean, sd and mad are very near hence no outliers, more data on right side and data is platykurtic (meansing it has lighter tails & flat central peak) as shown by kurtosis value.Also skewness value is -0.05 it means it is a bit left skewed or negatively skewed
+```{r fig.height=4,fig.width=4,echo=FALSE}
+library(psych)
+describe(grades$gpa)
+hist(grades$gpa,xlab="GPA",ylab=" Frequency",main="Histogram of GPA",col="red")
+boxplot(grades$gpa,col="red",main= "Boxplot of GPA")
+
+```
+
+
+####2. Quiz1
+Data states that  mean is 7.47 sd is 2.48.By the histogram and boxplot we can say that data is skewed towards towards the left that is it is negatively skewed as skewness value is -0.83 also Kurtosis value is 0.04 which is close to 0 hence our data is having heavier tails and sharper peaks an is a leptokurtic distribution.Alsorange of quiz1 is 0 to 10
+```{r fig.height=4,fig.width=4,echo=FALSE}
+ library(psych)
+describe(grades$quiz1)
+hist(grades$quiz1,xlab="Quiz1",ylab=" Frequency",main="Histogram of Quiz1",col="red")
+boxplot(grades$quiz1,col="red",main= "Boxplot of Quiz1")
+```
+
+
+####3. Quiz2
+Data states that mean value is 7.98 and sd of 1.62. By histogram states that data is skewed little towards the left and boxplot states that data is a almost normally distributed with an outlier in it which is 3 but it is also little skewed towards left.Range of quiz2 is 3 to 10 .Skewness value of -0.64 means a little left skewedkurtosis value  of -0.35 means a platykurtic with lighter tails and a flat central peak
+
+```{r fig.height=4,fig.width=4,echo=FALSE}
+library(psych)
+describe(grades$quiz2)
+hist(grades$gpa,xlab="Quiz2",ylab=" Frequency",main="Histogram of Quiz2",col="blue")
+boxplot(grades$quiz2,col="blue",main= "Boxplot of Quiz2")
+```
+
+
+####4. Quiz3
+Data states that mean value is 7.98 and sd of 2.31(means the observations can have standard dev.of 2.31).By histogram we concluded that data is more  towards the left and boxplot states that data is a not normally distributed but completely skewed towards left.Range of quiz3 is 0 to 10 ,Skewness value of -1.1 means data is  left skewed .Also kurtosis value  of 0.59 means a leptokurtic with heavier tails and a high sharp  peak
+
+```{r fig.height=4,fig.width=4,echo=FALSE}
+library(psych)
+describe(grades$quiz3)
+hist(grades$gpa,xlab="Quiz3",ylab=" Frequency",main="Histogram of Quiz3",col="green")
+boxplot(grades$quiz3,col="green",main= "Boxplot of Quiz3")
+```
+
+
+####5. Quiz4
+Data in quiz4 states that mean value is 7.98 and sd of 2.28(means the observations can have standard dev.of 2.28).By  histogram we find that data is more  towards the left and boxplot states that data is a not normally distributed but completely skewed towards left.Range of quiz4 is 0 to 10 .Skewness value of -0.89 means data is  left skewed .kurtosis value  of -0.09 means a platykurtic with lighter tails and a flat central  peak
+
+```{r fig.height=4,fig.width=4,echo=FALSE}
+library(psych)
+describe(grades$quiz4)
+hist(grades$gpa,xlab="Quiz4",ylab=" Frequency",main="Histogram of Qui4",col="yellow")
+boxplot(grades$quiz4,col="yellow",main= "Boxplot of Quiz4")
+```
+
+
+####6. Quiz5
+Data states that mean value is 7.87 and sd of 1.77 (means the observations can have standard deviation  of 1.77) .By the histogram we conclude that data is spread towards the left side more and boxplot states that data is a little more towards the left side but can be said as normally distributed.Range of quiz5 is 0 to 10 ,.Sskewness value of -0.69 means data is  a bit left skewed .kurtosis value  of 0.16 means a leptokurtic with heavier tails and a sharper central  peak than no distribution
+
+```{r fig.height=4,fig.width=4,echo=FALSE}
+library(psych)
+describe(grades$quiz5)
+hist(grades$gpa,xlab="Quiz5",ylab=" Frequency",main="Histogram of Quiz5",col="brown")
+boxplot(grades$quiz5,col="brown",main= "Boxplot of Quiz5")
+```
+
+####7. Total
+Data states that mean is 100.57 & sd is 15.3.Also Mean and trimmed mean, sd and mad are very near hence no outliers and no variability, most data on right side hence it is left skewed. Skeweness value of -.081 means data is left skewed or can be negatively skewed.Data is leptokurtic meaning heavier tails and sharper centralpeak as shown in kurtosis value.
+
+```{r fig.height=4,fig.width=4,echo=FALSE}
+library(psych)
+describe(grades$total)
+hist(grades$gpa,xlab="Total",ylab=" Frequency",main="Histogram of total",col="orange")
+boxplot(grades$total,col="orange",main= "Boxplot of total")
+```
+
+
+####8. Response Variable Final
+Data in the final variable states that it has mean of 61.48.final is numeric with range  40-75  which can be seen from min & max.Standard deviation is 7.94 which means that the  68% of the deviations are within the zone of [ 61.47 + 1*7.94] or [61.48- 1*7.94] i.e  b/w53.54 & 69.42 whereas 95% of the final observations are in the range [61.48 +- (2 *7.94)] i.e. b/w 45.6 & 77.36 . Median of final is 62 after arranging 62 is the median final score of students.
+By Histogram we can say that final data is almost normally distributed around its mean but a little skewed towards left and there is an outlier in the data whih is 40.
+trimmed mean of final is  61.74 .which is obtained by removing the observations which are quite far from the other observations or in one way quite far from the mean.
+Skewness value of final data is -0.33 which means that the data little towards the left due to outliers present.kurtosis value of -0.42 means that distribution is with light and thinner tails and its central peak is lower and broader when compared with normal distribution.Hence the data is platykurtic as per the Kurtosis value
+
+
+```{r fig.height=4,fig.width=4,echo=FALSE}
+library(psych)
+describe(grades$final)
+hist(grades$final,xlab="Total",ylab=" Frequency",main="Histogram of final",col="green")
+boxplot(grades$final,col="red",main= "Boxplot of Final")
+```
+
+
+#### Question  2.	How predictor/s is related to response variable (final)? .Present diagram/s and correlations in the following space. With  diagrams explain relationship .
+
+    Answer : 
+
+#####Response Variable or DependentVariable is : final
+
+The scaled variables which can be considered as predictors(x-axis) for predicting the response variable final(dependent variable-y axis) can be
+
+1. gpa
+2. quiz1
+3. quiz2
+4. quiz3
+5. quiz4
+6. quiz4
+7. quiz5
+8. total
+9. percent
+
+Now let us describe each of these predictors one by one by plotting their scatter plot and try to  understand their relationship with final(y)
+
+##### Scatter plots Predictor Vs Response Variable
+
+```{r fig.height=4,fig.width=4,echo=FALSE}
+plot(grades$gpa,grades$final,main= "gpa vs Final" , xlab = "gpa", ylab = "final",col="red",abline(lm(final~gpa,data=grades)))
+plot(grades$quiz1,grades$final,main= "Quiz1 vs Final" , xlab = "quiz1", ylab = "final",col="red",abline(lm(final~quiz1,data=grades)))
+plot(grades$quiz2,grades$final,main= "Quiz2 vs Final" , xlab = "Quiz2", ylab = "final",col="red",abline(lm(final~quiz2,data=grades)))
+plot(grades$quiz2,grades$final,main= "Quiz3 vs Final" , xlab = "Quiz3", ylab = "final",col="red",abline(lm(final~quiz3,data=grades)))
+plot(grades$quiz2,grades$final,main= "Quiz4 vs Final" , xlab = "Quiz4", ylab = "final",col="red",abline(lm(final~quiz4,data=grades)))
+plot(grades$quiz2,grades$final,main= "Quiz5 vs Final" , xlab = "Quiz5", ylab = "final",col="red",abline(lm(final~quiz5,data=grades)))
+plot(grades$total,grades$final,main= "total vs Final" , xlab = "total", ylab = "final",col="red",abline(lm(final~total,data=grades)))
+plot(grades$percent,grades$final,main= " Percent vs Final" , xlab = "Quiz2", ylab = "final",col="red",abline(lm(final~percent,data=grades)))
+```
+
+#### Now checking Correlation of each of these predictors with the  response variable
+
+```{r }
+cor(grades$gpa,grades$final) #correlation between  gpa & final
+cor(grades$quiz1,grades$final) #correlation between  quiz1 & final
+cor(grades$quiz2,grades$final) #correlation between  quiz2 & final
+cor(grades$quiz3,grades$final) #correlation between  quiz3 & final
+cor(grades$quiz4,grades$final) #correlation between  quiz4 & final
+cor(grades$quiz5,grades$final) #correlation between  quiz5 & final
+cor(grades$total,grades$final) #correlation between  total & final
+cor(grades$percent,grades$final)   #correlation between  percent & final
+```
+
+We can see that all the predictors are positively Correlated with the final .We can notice that total & percent are the two variables which are highly positively related with final .This is quite obvious as final  is a part of the total & percent. Higher the final score higher is total or percent. According to the Scatter plots we can say that the final and preditors are related to each other through a linear line Hence the linearity assumption is true for all. [ Assumption in order to predict the values through Regression model ]   
+
+
+####Question3.	What are R Square and Adjusted R Square of your final model? Show R Output and explain in 3 or 4 lines.Explain the difference between R Square and Adjusted R Square. Which one is superior and why?
+
+    Answer:  
+
+There can be various models built based on the predictors available .Let's start building Linear Regression Models
+
+
+####  1.  final ~ gpa+quiz1+quiz2+quiz3+quiz4+quiz5
+
+```{r}
+fg12345<-lm(final~gpa+quiz1+quiz2+quiz3+quiz4+quiz5,data=grades)
+fg12345
+summary(fg12345)
+```
+
+From the above model we can see that the quiz1,quiz2,quiz3,quiz4,quiz5 have p values which are greater than LOS hence our null hypothesis H0: slope is not significant OR There is no significant Linear relationship with final of these predictors for this Linear Regression model.
+With this model we can say that the preditors together explain 49.22% variance in the dependent variable final & the value Adjusted R squared  of .4611 meaning 46.11% variance an be explained by this model for final.
+We will not consider this model as it has more predictors and even slope  of all the predictors except gpa is not much  significant with final
+Point to be noted is that Quiz3 has nearest signifiant p value close to LOS of 0.05 so we an have quiz3 as a consideration
+
+```{r  echo=FALSE,message=FALSE}
+library(car)
+```
+
+```{r}
+vif(fg12345)
+```
+
+In this model quiz1 is artifiially increasing the value of R square as its Variance inflation factor is 5.01 whih is quite high so lets remove quiz1 from this model and build another model without quiz1 as predictor
+
+#### 2.  final~gpa+quiz2+quiz3+quiz4+quiz5,data=grades
+
+```{r}
+fg2345<-lm(final~gpa+quiz2+quiz3+quiz4+quiz5,data=grades)
+summary(fg2345)
+```
+In this model after removing quiz1 from the above model there is not much effect on the value of R-squared hence we can say that using this model 49.06% of variance in final is explained .
+But here again p-value of quiz2,quiz4,quiz5 are more than LOS (alpha=0.05) meaning their slope is not significant to final variable.Hence we are removing these predictors as we need minimum no of predictors without much compromising on R-Squared value
+
+```{r}
+library(car)
+vif(fg2345)
+```
+No high correlation among predictors,but p-values of quiz2,quiz4,quiz5 are high wrt LOs,so we are removing them from this model and making the new model explained just below
+
+#### 3.  final~gpa+quiz3,data=grades
+
+```{r}
+fg3<-lm(final~gpa+quiz3,data=grades)
+fg3
+summary(fg3)
+```
+In this model the p-value of both gpa & quiz3 is less than LOS(alpha=0.05) meaning slope of both are significant with the dependent variable.Moreover, as we need to take least variables in our model gpa & quiz3 are giving us 45.35% explanation in variance of final, so this model is one of the best models to be considered as the preditor model for the predition of response variable final .
+
+```{r}
+vif(fg3)
+```
+Both the preditors here have the same Variance inflation fator but they are not greatly correlated as VIF around is 1.06.
+
+As gpa is also obtained by taking into consideration all the marks in quiz 1-5 and final and total.So taking GPa as a predictor needs the principal to have GPA scores readily available with her for predicting final scores(used to alculate gpa). (Principal can predict through the model of GPA for future students that a student with assumed GPA will have predicted final score within this partiular range)
+The  Linear Regression model that can be considered best for prediticng final will be final~gpa+quiz3 . This model will give a prediction of final based (on actual gpa  & quiz3- for students with data available ) or (on assumed gpa and quiz 3 score -for future students) .This model hels us explain the variance in final with 45.35 %. This model an be used to predict Final using GPA & quiz 3 
+
+#### 4.   final~total+quiz3,data=grades
+
+
+```{r}
+ft3<-lm(final~total+quiz3,data=grades)
+ft3
+summary(ft3)
+```
+
+```{r}
+vif(ft3)
+```
+
+The Best Linear Regression model with condition can have total as a preditor of final scores for the students(who have got scores in all  the quiz1-5, final and have gpa available-hence total available with them) or( future students- who dont have any score available with them and  an assumption based on estimated total and quiz3 score will predict final score for the students) . Principal can predict using this model that a student with  total & quiz3 must have a final score  in a particular range. The Linear Regression of total combined with quiz3 will give us explanation of 87.31% of variance in final (y) . For future students who donot have total score available with them cannot use this model to predict final score obviously as they don't have total sores available with them. But Prinipal an take an idea that for future students for this much total & quiz3 score student final score can be predicted and will lie in a partiulatar range as predicted by the model with 87.31% variance in final explained .Moreover for this model vif is not artificially being increased by any of these two predictors.
+
+
+#### 5.  final~quiz2+quiz3,data=grades
+
+Best modelobtained by considering the score in quiz1 to quiz5 only and no total no perent or gpa are obtained or be predicted . Wewill use the below model to predict the final score
+
+```{r}
+f23<-lm(final~quiz2+quiz3,data=grades)
+summary(f23)
+```
+
+```{r}
+vif(f23)
+```
+
+In this model considering quiz2 & quiz3  exams which happens before the final exams can together help us explain 36.71% variance in the final 
+As p value of both is less than LOS(0.05) so we can say that both quiz2 & quiz3 are signinficantly related to final(depedent variable) .
+
+####6.  final3~quiz3
+
+```{r}
+f3<-lm(final~quiz3,data=grades)
+summary(f3)
+```
+In this model around 31.49% of variance in final is explained by quiz3 alone. Hence We can consider it as an average to good predictor model.
+
+
+    ###For prediting final the two best models selected are ft3 & f23
+
+    ####1. ft3 will be used when predicting with total and quiz3 : with explaining  87.31% of variance in final with r square value of .8731 and adjusted R square value of .8706
+
+    ####2. f23 will be prediting with quiz2 & quiz3 : explaining 36.71% of variance is R with R-squared value of .8731 and adjusted R square value of .3547
+
+
+
+The Formula for R-squared Value is given by SSR/SST which can be reduced to  R-Squared  = 1 - SSE/SST
+
+    ####Adj- R Squared = [ 1 - (SSE/degree of freedom of residuals)/( SST /df of model) ]
+
+    Hence the formula is reduced to 
+
+    ####Adj- R Squared= [ 1 -  (SSE/n-k-1)/( SST n-1) ]
+
+Out of R-Squared value &  Adjusted R-Squared value , Adjusted R squared value can be considered more superior, As it takes into consideration the  predictors of the model while calculating the variance for  the dependent variable .R-Squared value suppose that every independent variable is responsible for some variation in the dependent variable whereas Adjusted R - Squared Value gives the percentage for those independent variables which in actual effects the Dependent variable. R-squared measures the proportion of the variation in the dependent variable (Y) explained by the independent variables (X) for a linear regression model whereas, Adjusted R-squared adjusts the statistic based on the number of independent variables in the model.
+Although there is very less difference in the value of both, so we can consider any one for our consideration.
+
+####Question  4.	 How do you interpret significance value of F-statistics? Mention in few lines and show R Output ?
+
+    Answer: 
+
+
+Significance value of F Statistics basically indicates the fit of the Overall Linear regression model built..It tells us whether the model provides a better fit to the data than a model that has no independent variable (in which we take the mean as the only data predicting point) .This test is basically the Hypothesis test for relationship.
+
+The F-test uses its p-value for overall significance  has 2 hypothesis :
+.	H0:  there is no significant relationship i.e Slope of population is "0"
+.	Ha: there is significant relationship .i.e slope of Population is not "0"
+We compare the p-value of the F-test with LOS(alpha) i.e Level of significance . If p value is less than alpha we can come to the conclusion that the regression model fits the data better as H0 will be rejected and Ha will be accepted. It also mean the model is adding significant predictability for variable y by x
+
+But if p-value of F-test is more than  Level of significance we can conclude that our regression model is not significant .
+Now we have two models for whih the assumptions are to be checked the name of the models are f23 & ft3
+
+```{r}
+summary(f23)
+summary(ft3)
+```
+
+
+    ####For f23 our F-test has p-value which is equal to  7.359e-11 which is almost '0' hence we reject our null Hypothesis for that model is rejected meaning F-statistic value of 29.59 is significant fit for our model
+
+    ####For ft3 our F-test  has p-value which is equal to  2.2e-16 which is almost '0' hence we reject our null Hypothesis for that model is rejeted meaning F-statistic value of 350.8 is significant fit for our model 
+
+
+####Question 5.	Use equation writer & Write Regression equation of the best model. Show R Output. 
+
+    Answer.
+
+The Equation for our models are as follows
+
+For Model ft3 the equation of the regression line is given by
+ 
+    final = 6.67358 + (0.69502*total) - (1.89162*quiz3)
+ 
+For Model f23 the equation of the regression line is given by 
+
+    final = 39.7129 + (1.5407*quiz2) - (1.1862*quiz3)
+    
+
+####Question6. 	What is Durbin Watson Statistics of your model? How DWS is interpreted?  Show how do you find dL and dU and design four boundaries in the sample diagram .Show R Output also. 
+
+
+    Answer :
+
+### Let's find Durbin Watson Test for our two models
+
+    For ft3 durbin watson Statistics comes out to be 2.115215
+```{r}
+dwt(ft3)
+```
+
+    For f23 durbin watson Statistics comes out to be 2.233423
+```{r}
+dwt(f23)
+```
+
+The DWS statistics is the number that tests the autocorrelation in the errors/residuals from a regression analysis. It's value will always lie between "0 & 4"" .DWS value of '2' means there is no autocorrelation in the sample,whereas value towards "zero"  from  '2' means there is +ve autocorrelation & "towards 4"" from '2' means -ve  autocorrelation.
+Autocorrelation is a characteristic of data in which the correlation between the values of the same variables is based on related objects. In this dataset Autocorrelation for variable 'final' it means that the marks of student 2 in final depends on the marks of student 1 in final and that of  student 3 in final depends on the marks of student 2 in final and so on.
+If such autocorrelation occurs we should not build a Linear regression model for our model and we just need to move to time analysis Model. 
+
+The formula for DWS is [summation {E(i)- E(i-1)^2}  / summation {E(i)^2} ] , which is quite complex .Here ei means the expected value based on the regression equation which we have generated .
+As number of predictors  in our model is 2 hence we need to look at the table for DWS with n= 105 & k=2 to obtain dl & du. We need to find these value using the table with alpha=0.05 . We get the value of dl= 1.63  & du = 1.72
+
+The durbin Watson table scale for our models ft3 & f23 is as shown below. Both models have 2 preditors so the scale of DWS would be same for both models
+
+![Durbin Watson scale](C:/Users/Mohit/Documents/scaledws.jpg)
+
+#### How to interpret Durbin Statistics Value
+
+After finding the dl & du value we place them on the scale of Durbin Watson .If the value of DWS we found or our model is lying between the zone of "No auto correlation" than we can be sure of "no autocorrelation" & hence we  can proceed with the Linear Regression Model. If the value of DWS  lies in Positive or Negative range of the scale than for sure Linear Regression model cannot be applied as it shows there is relationship between the observation values. Now if it comes in Indecisive zone the benefit of the doubt goes with the Researcher. Most of the times,he continues with the Linear Regression model results.
+As our Durbin statistics  is "2.11 for ft3 model"  & "2.23 for f23 model" both of which lies in No-Autocorrelation region we can say that there is no-autocorrelation and thus  we can proceed further with the results of  Linear regression models. 
+
+
+####Question 7. 	What is VIF for each predictor/s? How do you interpret VIF or what VIF signifies? Max 5 lines. [VIF (Variance Inflation Factor) Show R Output. ?
+
+    Answer :
+
+VIF means Variance Inflation factor
+This  inflation factor is basically used to calculate the multi-collinearity  between the predictors.If VIF of 2 or more predictors/variables is more than 5 generally it means they are highly correlated,we can remove any one/more of them which we feel is less significant for the model .It is a simple approach to identify collinearity among explanatory variables. 
+
+VIF calculations are straightforward and easily comprehensible; the higher the value, the higher the collinearity. A VIF for a single explanatory variable is obtained using the r-squared value of the regression of that variable against all other explanatory variables.
+
+In our model ft3 & f23 VIFs for preditors  is as below
+
+    For ft3 model 
+```{r}
+vif(ft3)
+```
+
+    For f23 model
+```{r}
+vif(f23)
+```
+
+We can also calculate VIF for any predictor by interchanging the it with the response variable and getting the value of R-squared & then plugging it in the formula for Variance Inflation factor given below:
+![Variance inflation factor](C:/Users/Mohit/Documents/vif.jpg)
+
+
+####Finding the predicted Value of final through both the models made
+
+    1.  For ft3 model
+```{r}
+grades$predft3<-predict(ft3)
+grades$predft3
+
+```
+
+    2.  For f23 model
+```{r}
+grades$predf23<-predict(f23)
+grades$predf23
+```
+
+####Question 8.	How do you interpret the significance of slope of predictors based on sig. Value or p-value associated with t-statistics of each predictor/s. [testing of slope] Show R Output. ?
+
+
+    Answer: 
+
+```{r}
+summary(ft3)
+summary(f23)
+```
+
+The interpretation of significance of the slope of the predictors based on significance value  or  p-value  associated with the t statistics is  comparing it with the level of Significance.
+
+A t-test is always associated with a hypothesis testing.In the Regression analysis a  t-test is done for testing the slope of the predictor whether it has any  significant relation with the dependent variable or not .and this t-test has p value associated with it which is compared with the LOS(alpha)  So this interpretation tells us whether slope of predictor has some linear relationship with response variable or not.
+
+The hypothesis associated with the testing of the slope is as follows for Simple Regression 
+.	Ho:  Beta1=0 , there is no significant relationship of slopeof predictor
+.	Ha: Beta1 != zero, there is significant relationship with slope of that predictor
+
+The hypothesis associated with the testing of the slope is as follows for multiple Regression
+.	Ho:  Beta1=0 , there is no significant relationship 
+.	Ha: at least one slope of one predictor is not equal to "zero", there is significant relationship with slope of that predictor
+
+Significance value or p-value for our t-test is used for the above  hypothesis testing for slope test . If we get to know that the   p-value  > LOS(alpha=0.05) then null hypothesis will be accepted and it will mean that slope of that variable has no significant effect on the dependent variable & if we p-value< LOS(alpha=0.05) ,we reject the null hypothesis meaning that there is significant relationship between them
+
+For our Model "ft3" the value of Pr(>|t|) or p-value for our predictor total is 2e-16 & for quiz3 is 6.19e-14 .Both almost equal to "zero" and less than LOS meaning both the predictors have significant slope for our model ( p-value< LOS (alpha=0.05))
+
+For our Model "f23" the value of Pr(>|t|) or p-value for our predictor quiz2 is 00456 & for quiz3 is 0.00198 .Both  less than LOS meaning both the predictors have significant slope for our model.( p-value< LOS (alpha=0.05))
+
+
+#### error values of final through the models are below. These values are giving us the residuals of our model
+
+    1. For Model ft3
+
+```{r results="hide"}
+grades$errft3<-residuals(ft3)
+grades$errft3
+```
+
+    2.  For Model f23
+
+```{r results="hide"}
+grades$errf23<-residuals(f23)
+grades$errf23
+```
+
+#### Adding observation no.s against each row in the data set grades
+```{r results="hide"}
+grades$obsno<-c(1:105)
+grades$obsno
+```
+
+##### The equations of the model which are built as the best or final Models are
+
+     1. For f23 model the Equation of Regression Line is
+
+       final =     39.7129 + (1.5407*quiz2) + (1.1862*quiz3)
+       
+    2.  For Ft3 model the equation of the Regression line is
+
+       final =     6.67358 + (.69502*total) - (1.89612*quiz3)
+       
+#### predicted values of final models using the above equations are below. These values are giving us the predited value of our model
+
+For model ft3,inserting the predicted values in the grades dataset  by column creation
+
+```{r results="hide"}
+predft3<-predict(ft3)
+grades$predft3<-predft3
+grades$predft3
+```
+     
+    *For Model f23,inserting the predicted values in the grades dataset  by column creation
+
+```{r results="hide"}
+predft3<-predict(ft3)
+grades$predft3<-predft3
+grades$predf23
+```
+
+####Question 9.	Test the assumption of Normality and interpret your findings.  .Show histogram and interpret in maximum 3 lines. 
+
+    Answer :
+
+###Assumptions Test for ft3 & f23 Models
+     
+####1.  Normality test for ft3 & f23
+
+    *For Ft3 & F23 let us draw  histogram for both the models of errors 
+
+```{r fig.height=4,fig.width=4,echo=FALSE}
+hist(grades$errft3,main = "Normality check for ft3 model", xlab="REsiduals",col="orange")
+hist(grades$errf23,main = "Normality check for f23 model", xlab="REsiduals",col="yellow")
+
+```
+
+
+In both the models the data is almost normally distributed but little skewed towards the left.It means it is a bit left skewed. But we an consider that the assumption of normality does hold.
+
+####Question 10. 	Test the assumption of Independent of observations and interpret in maximum 3 lines 
+
+    Answer :
+
+###Assumptions Test for ft3 & f23 Models
+
+####2.  Independent of observations 
+
+    *For Ft3 & F23 let us draw  scatter pot  for residulas & the Observations the models of errors 
+     
+```{r fig.height=4,fig.width=4,echo=FALSE}
+plot(grades$obsno,grades$errft3,main="Independence of  error for ft3",xlab= " obsv no", ylab="residuals")
+plot(grades$obsno,grades$errf23,main="Independence of  error for f23",xlab= " obsv no", ylab="residuals")
+
+```
+
+####Question 11. 	Test the assumption of linear relationship and interpret in maximum 3 lines for each predictor . If more than one predictor is used in model then more scatter plots would be required]
+
+    Answer :
+
+###Assumptions Test for ft3 &f23 Models
+
+#### Check of linear relationship 
+
+    *For ft3 let us draw  scatter pot  for final  & total and final and quiz3  
+    *For f23 let us draw  scatter pot  for final  & quiz2 and final  and quiz3  
+
+```{r fig.height=4,fig.width=4,echo=FALSE}
+plot(grades$total,grades$final,main="Linear Rltnship for ft3",xlab="total",ylab="Final",col="red")
+plot(grades$quiz3,grades$final,main="Linear Rltnship for ft3",xlab="quiz3",ylab="Final",col="red")
+plot(grades$quiz2,grades$final,main="Linear Rltnship for f23",xlab="quiz2",ylab="Final",col="green")
+plot(grades$quiz3,grades$final,main="Linear Rltnship for f23",xlab="quiz3",ylab="Final",col="green")
+
+```
+
+
+####Question  12.	 Test the assumption of Constant Error Variance and interpret in maximum 3 lines 
+
+    Answer :
+
+###Assumptions Test for ft3 & f23 Models
+
+####Check of Constant Error Variance : Homoscedacity
+
+
+    *For ft3 let us draw  scatter pot  for residuals   & Predicted  
+    *For f23 let us draw  scatter pot  for residuals   & Predicted  
+
+```{r fig.height=4,fig.width=4,echo=FALSE}
+plot(grades$predft3,grades$errft3,main="Constant error variance ft3",xlab="Predited",ylab="errors",abline(h=0))
+plot(grades$predf23,grades$errf23,main="Constant error variance f23",xlab="Predited",ylab="errors",abline(h=0))
+
+```
+
+
+
+####Question13.  What is Standard Error of Estimate of your model and how do you interpret the same. Show with some hypothetical values of predictors.
+
+    Answer:
+
+#####The standard error of estimate for our model  also called Residual standard error 
+    
+    *For model ft3 standard error of estimate is  2.857 & 
+    *For model f23 standard error of estimate  is 6.381 
+    
+The standard error of estimate  is a measure of the accuracy of predictions. In a regression line, the smaller the standard error of the estimate is, the more accurate the predictions are. 
+
+This standard error of estimate is the used to give us the confidence intervals at a particular level of confidence intervals. It is never good to give predictions in the Point estimate form so we give them in a range using standard error of estimate. 
+
+Say, you want to predict  final  for a given total & quiz3 marks using ft3 model equation
+
+    final =     6.67358 + (.69502*total) - (1.89612*quiz3)
+    Lets find for total= 5 & quiz3=7
+    final =     6.67358 + (.69502*80) - (1.89612*7)
+      final= 49.034
+
+We can also find the upper & lower range or the confidence interval using Standard error of estimate & the predicted values for ft3 model  Ul of final  & Ll of final 
+                
+                
+Now,Lets find predicted value using f23 model whose equation is given by 
+
+    final =     39.7129 + (1.5407*quiz2) + (1.1862*quiz3)
+    Lets find for quiz2= 5 & quiz3=7
+    final =     39.7129 + (1.5407*5) + (1.1862*7)
+    final= 55.7198
+
+We can also find the upper & lower range or the confidence interval using Standard error of estimate & the predicted values of f23 model Ul of final  & Ll of final.
+ 
+
+The fitted values or the confidence intervals  are given below 
+
+    *For ft3
+```{r}
+confint(ft3)
+fitted(ft3)
+```
+
+    *For f23
+```{r results="hide"}
+fitted(f23)
+confint(f23)
+predict(f23, interval="confidence")   #same as fitted
+
+```
+
+
+####Question no 14: Congratulation! You have done a marvellous job indeed and build your first predictive model. M just reminding that regression model is somewhere 50% of a data analyst routine job and has great importance in practical world. 
+####Now write a summary of your findings in 250 words which you will show to your reporting manager (before forwarding the model to your client/Principal in this case). This time, no R Output and minimum pictures are needed. Mind it, your reporting manager is a senior statistician/data scientist and do not have time to go into your entire work. He will prefer to read meaningful, to the point and technically correct summary! Here is your chance to impress your boss!
+
+    Answer :
+    
+Grades.csv consists of 105 observations and 22 variables (mostly categorical or nominal ) .The data tells about the details of the students giving gender, ethnicity, class sections ,marks in 5 quizzes ,marks in final, total marks, gpa and percentage and also tell  whether the student is pass or fail .
+
+As we the main motive of the project was to to build a predictive model for predicting final for consumption I have built two linear regression models to predict final . 
+	
+    #####Model to predict final using quiz2 & quiz3
+
+One of our Linear Regression Model predicts the final score using the performance in quiz2 & quiz3 combined. The name of this model is f23  This multiple regression model helps us explain the variance in the final with 36.71% confidence and the remaining 63.29% is due to the other factors like quiz1 quiz2 quiz3 quiz4 quiz5 gpa or total etc. The model predictors have significant slope with the dependent or the response variable final which is checked by the significance value for t-test of the predictors i.e the p-value. Moreover the Variance Inflation factor for both the  variables is 1.89 which is in acceptance zone meaning these two predictors are not highly correlated .Also the DWS for the model is 2.233 which lies in the no autocorrelation zone meaning our linear regression is a right model for predicting .  Standard error of estimate of our model is  6.381 means that with this much standard deviation range we would be able to predict our final range with 95% confidence level. The equation of the model  of predicting final using quiz2 & quiz3 with 36.71% variance in final explained is given as below:
+
+    final=39.7129 + (1.5407×quiz2)+ (1.1862×quiz3)
+    
+The f-test significance value i.e p-value of -f-test is less than LOS meaning that the test of overall model is significant with the  final dependent variable. 
+The assumptions of our models like normality, Linear relationship ,constant error variance are almost satisfied with the data provided and calculated .so we can say that our Model I right way to predict final using quiz2 & quiz3 scores 
+
+
+    #####Model for predicting final using the variables total and quiz 3
+
+The name of the model is ft3. This multiple regression model helps us explain the variance in the final with 87.31% confidence and the remaining 12.69% is due to the other factors like quiz1 quiz2 quiz3 quiz4 quiz5 gpa alone or grouped together. The model predictors have significant slope with the dependent or the response variable final which is checked by the significance value for t-test of the predictors  i.e the p-value of t test for model. p-value for t-test is 2e-16 and for quiz3  it is 6.192-14.
+The equation for the model ft3 is given by  :
+
+    final =6.67358 + (.69502×total) - (1.89612×quiz3)
+
+Variance Inflation factor for both the  variables is 3.21 which is in acceptance zone meaning these two predictors are not highly correlated. Also the DWS for the model is 2.113 which lies in the no autocorrelation zone meaning our linear regression is a right model for predicting .Standard error of estimate of our model is  2.857 means that with this much standard deviation range we would be able to predict our final range with a particular LOS defined. The f-test significance value i.e p-value of -f-test is less than LOS meaning that the test of overall model is significant with the final dependent variable.  The assumptions of our models like normality, Linear relationship ,constant error variance are very well satisfied with the data provided and calculated .so we can say that our Model I right way to predict final using quiz2 & quiz3 scores 
+
+This model can be used by the principal if she doesn't  have final score with her. and she already have total score with her . Or also this model is used to predict a final score  using the predictors combination of  total and quiz3 with 87.31% variance in the model.
+The assumptions of our models like normality, Linear relationship ,constant error variance are almost satisfied with the data provided and calculated .so we can say that our Model I right way to predict final using quiz2 & quiz3 scores 
+
+
+####Question No 15 : This is final stroke! Besides your boss, your client is equally or rather more important to you! Your challenge is this that the Principal/client is not statistics savvy! You need to summarize your work/findings in a non statistical manner or in a lay man manner and this is indeed challenging. However, no way out and you have to do it in a simple but impressive manner (impressive to client!). Write down summary in 500 words.
+
+    Answer:
+    
+There are two models build to predict the final score of the total either one can predict using quiz1 marks & quiz2 marks together or using total and quiz3 marks together .For both the models equations have been developed and by plugging in the values one can obtain the predicted final score.
+The equations derived by the models of the regression plane are :
+
+     final =6.67358 + (.69502×total) - (1.89612×quiz3)
+
+final=39.7129 + (1.5407×quiz2) + (1.1862×quiz3)
+
+For Example : if a student gets 100 marks in total & 8 marks in quiz3 .The predicted final score will for model named ft3 will be
+
+    final =6.67358 + (.69502×100) - (1.89612×9)
+ 
+ Using the equation we get the final value as 59.11. So basically for a total of 100 and quiz3 score of 8 final predicted score as per model is 59.11.  This predicted value of final is calculated with a spread or variance of 87.31%  using these two predictors .
+
+Similarly a second model name f23 which predicts the final score using the quiz2 & quiz3 score will predict final score for quiz2=8 and quiz3=9 ,equals to 62.7143 with a 36.71% variance in final  which is explained using these two predictors
+
+    final=39.7129 + (1.5407×8) + (1.1862×9)
+
+As we can understand these predicted final values are point estimates ,so we need to find out the range/intervals of final that will help us predict the scores to a better extent keeping some deviations in mind .These are called confidence intervals. They are calculated using the standard error of estimate. For our model which uses total and quiz3 for predicting final sore has a standard error of estimate as 2.857 & the model which uses quiz2 and quiz3 for predicting final sore has a standard error of estimate as 6.381
+
+For example:  If we want to predict a confidence interval for a predicted score of  59.11 which is obtained using a we will use the formula for model named ft3
+
+    Upper limit of Confidence interval = Predicted score + ( z Critical value at confidence level selected * Standard error of estimate for model)
+    = 59.11 + ( z critical value at 95% confidence level * 2.857)
+    =  59.11 + ( 1.96* 2.857) 
+    =  64.70
+    
+    
+    Lower limit of Confidence interval = Predicted score - ( Critical value at confidence level selected * Standard error of estimate )
+    = 59.11 - ( z critical value at 95% confidence level * 2.857)
+    = 59.11 - ( 1.96* 2.857) 
+    =  53.40
+
+
+Similarly If we want to predict a confidence interval for a predicted score of   62.7143 which is obtained using quiz2 & quiz3  scores we will use the below formula for model named f23
+    
+    Upper limit of Confidence interval = Predicted score + ( z Critical value at confidence level selected * Standard error of residuals for model)
+      = 62.7143 + ( z critical value at 95% confidence level * 2.857) 
+      =  62.7143+ ( 1.96* 6.381)
+      =  75.22
+      
+    Lower limit of Confidence interval = Predicted score - ( Critical value at    confidence level selected * Standard error of estimate )
+      = 62.7143 - ( z critical value at 95% confidence level * 2.857)
+      =  62.7143 - ( 1.96* 6.381) 
+      = 62.7143 - 12.506 
+      =  50.20
+
+
+This is as simple explanations to predict the  final scores based on the best models which can be built using  predictor variables available.
+The Model named ft3 which uses total as a predictor can help us predict final only if either total score is available with or total sore is assumed and based on it the final score obtained by model can be predicted .
+
+
+####Question No 16 :  Now time to show case your work to rest of the world! Prepare a website as per the sample attached which is only a guideline. Apply your creativity and make it really impressive. 
+
+
+
+    Answer
+    
+The link of the website for the project is as mention below-:
+
+    www.mhtdsm.wixsite.com/linearregression
+
+# "Thanks a lot for COMPLETING the Project together".
+
+##HAPPY LEARNING
+
+###MOHIT ARORA"
